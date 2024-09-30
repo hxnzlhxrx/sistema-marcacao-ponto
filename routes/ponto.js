@@ -2,14 +2,28 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 
+// Função para obter a hora local
+function getLocalTime() {
+    const now = new Date();
+    const timezoneOffset = now.getTimezoneOffset() * 60000; // Offset em milissegundos
+    const localTime = new Date(now.getTime() - timezoneOffset); // Ajuste o horário
+    return localTime.toISOString().split('T')[1].split('.')[0]; // Retorna a hora no formato HH:MM:SS
+}
+
 // Marcar entrada
 router.post('/entrada', (req, res) => {
     const { funcionario_id } = req.body;
-    const dataAtual = new Date().toISOString().split('T')[0];  // Gerar a data no formato YYYY-MM-DD
+    const dataAtual = new Date().toISOString().split('T')[0]; // Data no formato YYYY-MM-DD
 
-    const query = `INSERT INTO ponto (funcionario_id, data, hora_entrada) VALUES (?, ?, TIME('now'))`;
+    if (!funcionario_id) {
+        return res.status(400).json({ error: 'ID do funcionário é necessário' });
+    }
 
-    db.run(query, [funcionario_id, dataAtual], function (err) {
+    const horaAtual = getLocalTime(); // Usando a hora local ajustada
+
+    const query = `INSERT INTO ponto (funcionario_id, data, hora_entrada) VALUES (?, ?, ?)`;
+
+    db.run(query, [funcionario_id, dataAtual, horaAtual], function (err) {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
@@ -21,32 +35,17 @@ router.post('/entrada', (req, res) => {
 // Marcar saída
 router.post('/saida', (req, res) => {
     const { funcionario_id } = req.body;
-    const dataAtual = new Date().toISOString().split('T')[0];  // Gerar a data no formato YYYY-MM-DD
+    const dataAtual = new Date().toISOString().split('T')[0];
 
-    const query = `UPDATE ponto SET hora_saida = TIME('now') WHERE funcionario_id = ? AND data = ? AND hora_saida IS NULL`;
-
-    db.run(query, [funcionario_id, dataAtual], function (err) {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({ message: 'Saída registrada com sucesso', changes: this.changes });
-    });
-});
-
-module.exports = router;
-
-// Marcar saída
-router.post('/saida', (req, res) => {
-    const { funcionario_id } = req.body;  // Use `funcionario_id` para manter consistência
-    
     if (!funcionario_id) {
         return res.status(400).json({ error: 'ID do funcionário é necessário' });
     }
 
-    const query = `INSERT INTO ponto (funcionario_id, hora_saida) VALUES (?, ?)`;
+    const horaAtual = getLocalTime(); // Usando a hora local ajustada
 
-    db.run(query, [funcionario_id], function (err) {
+    const query = `UPDATE ponto SET hora_saida = ? WHERE funcionario_id = ? AND data = ?`;
+
+    db.run(query, [horaAtual, funcionario_id, dataAtual], function (err) {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
@@ -56,5 +55,7 @@ router.post('/saida', (req, res) => {
 });
 
 module.exports = router;
+
+
 
 

@@ -1,29 +1,27 @@
+// src/routes/admin.js
 const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 
-// Rota para ver todos os registros de ponto
-router.get('/relatorios', (req, res) => {
-  db.all('SELECT * FROM ponto', [], (err, rows) => {
+// Rota para obter dados do dashboard de admin
+router.get('/dashboard', (req, res) => {
+  db.all('SELECT * FROM funcionarios', [], (err, funcionarios) => {
     if (err) {
-      res.status(500).json({ error: err.message });
-      return;
+      console.error('Erro ao buscar funcionários:', err);
+      return res.status(500).json({ error: 'Erro ao buscar funcionários.' });
     }
-    res.json({ data: rows });
-  });
-});
 
-// Rota para modificar registros de ponto
-router.put('/modificar-ponto/:id', (req, res) => {
-  const { hora_entrada, hora_saida } = req.body;
-  const id = req.params.id;
-  db.run(`UPDATE ponto SET hora_entrada = ?, hora_saida = ? WHERE id = ?`, [hora_entrada, hora_saida, id], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json({ message: 'Registro de ponto modificado com sucesso!' });
+    db.all('SELECT * FROM pontos', [], (err, pontos) => {
+      if (err) {
+        console.error('Erro ao buscar registros de ponto:', err);
+        return res.status(500).json({ error: 'Erro ao buscar registros de ponto.' });
+      }
+
+      res.json({ funcionarios, pontos });
+    });
   });
 });
 
 module.exports = router;
+
+

@@ -1,0 +1,90 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+function Register() {
+  const [nome, setNome] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [senha, setSenha] = useState('');
+  const [confirmSenha, setConfirmSenha] = useState('');
+  const [role, setRole] = useState('usuario'); 
+  const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (senha !== confirmSenha) {
+      setErrorMessage('As senhas não coincidem');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/usuarios/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, cpf, senha, role }), 
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        console.log('Usuário cadastrado com sucesso!', data);
+        navigate('/'); 
+      } else {
+        setErrorMessage('Erro ao cadastrar usuário.');
+      }
+    } catch (error) {
+      setErrorMessage('Erro ao tentar cadastrar.');
+    }
+  };
+
+  return (
+    <div className="container register-container">
+      <h2>Cadastrar Novo Usuário</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Nome:</label>
+          <input
+            type="text"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)} 
+          />
+        </div>
+        <div>
+          <label>CPF:</label>
+          <input
+            type="text"
+            value={cpf}
+            onChange={(e) => setCpf(e.target.value)}
+          />
+        </div>
+        <div>
+          <label>Senha:</label>
+          <input
+            type="password"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+          />
+        </div>
+        <div>
+          <label>Confirmar Senha:</label>
+          <input
+            type="password"
+            value={confirmSenha}
+            onChange={(e) => setConfirmSenha(e.target.value)}
+          />
+        </div>
+        <div>
+          <label>Role:</label>
+          <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="usuario">Usuário</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <button type="submit">Cadastrar</button>
+        {errorMessage && <p>{errorMessage}</p>}
+      </form>
+    </div>
+  );
+}
+
+export default Register;
+
