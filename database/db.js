@@ -1,10 +1,10 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Caminho para o arquivo do banco de dados
+// rota para o arquivo do banco de dados
 const dbPath = path.resolve(__dirname, 'database.sqlite');
 
-// Criação ou abertura da conexão com o banco de dados
+// conexão com o banco de dados
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Erro ao conectar ao banco de dados:', err.message);
@@ -48,7 +48,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
       hora_saida TIME,
       horas_extras REAL DEFAULT 0,
       atraso REAL DEFAULT 0,
-      FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+      FOREIGN KEY (funcionario_id) REFERENCES usuarios(id)
     )`);
   });
 });
